@@ -11,21 +11,34 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::all();
+        $productName = $request->query('product_name');
+        $category = $request->query('category');
+
+        $query = Product::query();
+
+        if ($category) {
+            $query->where('category', $category);
+        }
+
+        if (!empty($productName)) {
+            $query->where('product_name', 'LIKE', '%' . $productName . '%');
+        }
+
+        $products = $query->get();
 
         if ($products->isEmpty()) {
             return response()->json([
                 'success' => false,
-                'message' => 'No products found'
+                'message' => 'No products found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
             'message' => 'Products retrieved successfully',
-            'data' => $products
+            'data' => $products,
         ], 200);
     }
 
@@ -66,11 +79,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product created successfully',
-            'data' => [
-                'product_name' => $product->product_name,
-                'description' => $product->description,
-                'price' => $product->price
-            ]
+            'data' => $product,
         ], 201);
     }
 
@@ -106,7 +115,7 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $data = $request->all();
         // dd($data);
@@ -137,12 +146,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Product updated successfully',
-            'data' => [
-                'id' => $product->id,
-                'product_name' => $product->product_name,
-                'description' => $product->description,
-                'price' => $product->price
-            ]
+            'data' => $product,
         ], 200);
     }
 

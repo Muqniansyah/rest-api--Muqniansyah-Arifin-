@@ -10,8 +10,15 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::apiResource('products', ProductController::class);
-
+// Route otentikasi
 Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
-// route logout agar bisa remove token must include middleware auth:sanctum
+Route::post('login', [AuthController::class, 'login'])->name('login');
+
+// Route logout dengan middleware sanctum
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+// Route API produk dengan proteksi sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('products', ProductController::class);
+    Route::get('products/search', [ProductController::class, 'searchByName']);
+});
