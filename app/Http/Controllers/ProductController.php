@@ -86,22 +86,39 @@ class ProductController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
-    {
-        $product = Product::find($id);
+    public function show(Request $request) {
+        $productName = $request->query('product_name');
 
-        if (!$product) {
+        // Debugging: Pastikan productName tidak kosong
+        if (empty($productName)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Product not found'
+                'message' => 'Product name is required',
+            ], 400);
+        }
+
+        $query = Product::query();
+
+        // Pencarian produk
+        if (!empty($productName)) {
+            $query->where('product_name', 'LIKE', '%' . $productName . '%');
+        }
+
+        $products = $query->get();
+
+        // Cek jika produk ditemukan
+        if ($products->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No products found',
             ], 404);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Product retrieved successfully',
-            'data' => $product
-        ],200);
+            'message' => 'Products retrieved successfully',
+            'data' => $products,
+        ], 200);
     }
 
     /**
